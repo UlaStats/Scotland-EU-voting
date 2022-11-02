@@ -1,1 +1,36 @@
+## Reading in the vote result from the Electoral Comission's website
+
+EU.result <- read.csv('EU-referendum-result-data.csv')
+
+## Reading in the boundaries data of the Scottish Councils
+
+# Local Authority Areas - Scotland from SpatialData.gov.scot
+# Downloading the boundaries data using the 'sf' package. Using the GeoJSON format 
+
+lirary(sf)
+
+loc.auth.areas <- st_read("https://geo.spatialhub.scot/geoserver/sh_las/wfs?authkey=b85aa063-d598-4582-8e45-e7e6048718fc&request=GetFeature&service=WFS&version=1.1.0&typeName=pub_las&outputFormat=application%2Fjson")
+
+# Initial visual examination of the data
+
+plot(st_geometry(loc.auth.areas))
+
+# Merging the two data sets by the name of the Council area
+
 library(dplyr)
+
+EU.vote.Scotland <- merge(loc.auth.areas, EU.result, by.y = 'Area', by.x = 'local_authority')
+
+
+# Plotting
+
+library(ggplot2)
+library(viridis)
+
+head(EU.vote.Scotland)
+
+ggplot(data = EU.vote.Scotland) +
+  geom_sf(mapping = aes(fill = Pct_Leave)) +
+  scale_colour_viridis(direction = -1)+ 
+  scale_fill_viridis(direction=-1) +
+  labs(fill = 'Leave (%)', title = 'Percentage of voters that voted leave in the EU referendum')
